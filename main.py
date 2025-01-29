@@ -64,8 +64,12 @@ def get_json_feed(debug):
 
         current_soup = BeautifulSoup(requests.get(article_url).content, 'html.parser')
         current_body = current_soup.find('div', {'class': 'article__content'})
-        for junk in (current_body("aside") + current_body('div', {'class': 'slate-ad__label'})
-                     + current_body('div', {'class': 'social-share'})):
+        for junk in (
+                current_body('aside') +
+                current_body('div', {'class': 'slate-ad__label'}) +
+                current_body('section', {'class': 'newsletter-signup'}) +
+                current_body('div', {'class': 'social-share'})
+        ):
             junk.decompose()
         article_body = str(current_body)
 
