@@ -59,15 +59,14 @@ def get_json_feed(debug):
             continue
 
         article_url = article.get(key='href')
+        article_title = article.find_next('b', {'class': 'topic-story__hed'}).text.strip()
+        article_author = article.find_next('span', {'class': 'topic-story__author'}).text
+
         current_soup = BeautifulSoup(requests.get(article_url).content, 'html.parser')
         current_body = current_soup.find('div', {'class': 'article__content'})
-
         for junk in (current_body("aside") + current_body('div', {'class': 'slate-ad__label'})
                      + current_body('div', {'class': 'social-share'})):
             junk.decompose()
-
-        article_title = article.find_next('b', {'class': 'topic-story__hed'}).text.strip()
-        article_author = article.find_next('span', {'class': 'topic-story__author'}).text
         article_body = str(current_body)
 
         log(article_title)
