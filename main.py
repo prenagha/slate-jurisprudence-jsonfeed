@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 import json
@@ -24,7 +24,10 @@ def log(message):
 def lambda_handler(event, context):
     return {
         'statusCode': 200,
-        'headers': {'Content-Type': 'application/json', 'Cache-Control': 'max-age=14400'},
+        'headers': {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'max-age=14400'
+        },
         'body': get_json_feed(False)
     }
 
@@ -47,8 +50,14 @@ def get_json_feed(debug):
     page = BeautifulSoup(html.text, 'html.parser')
     log("Parse End")
 
+    oldest = datetime.now(ZoneInfo('America/New_York')) - timedelta(days=7)
     feed_items = []
     for article in page.find_all('a', {'class': 'topic-story'}):
+        article_date_string = article.find('span', {'class': 'topic-story__date'}).text
+        article_date = datetime.strptime(article_date_string, "%b %d, %Y").astimezone(ZoneInfo('America/New_York'))
+        if article_date < oldest:
+            continue
+
         article_url = article.get(key='href')
         current_soup = BeautifulSoup(requests.get(article_url).content, 'html.parser')
         current_body = current_soup.find('div', {'class': 'article__content'})
@@ -60,7 +69,6 @@ def get_json_feed(debug):
         article_title = article.find_next('b', {'class': 'topic-story__hed'}).text.strip()
         article_author = article.find_next('span', {'class': 'topic-story__author'}).text
         article_body = str(current_body)
-        article_date = current_soup.find('time').get(key='content')
 
         log(article_title)
 
@@ -70,7 +78,7 @@ def get_json_feed(debug):
             'authors': [{'name': article_author}],
             'url': article_url,
             'content_html': article_body,
-            'date_published': article_date,
+            'date_published': article_date.isoformat(),
             'image': ICON,
             'banner_image': ICON,
         }
