@@ -54,7 +54,7 @@ def get_json_feed(debug):
     feed_items = []
     for article in page.find_all('a', {'class': 'topic-story'}):
         article_date_string = article.find('span', {'class': 'topic-story__date'}).text
-        article_date = datetime.strptime(article_date_string, "%b %d, %Y").astimezone(ZoneInfo('America/New_York'))
+        article_date = datetime.strptime(article_date_string, "%B %d, %Y").astimezone(ZoneInfo('America/New_York'))
         if article_date < oldest:
             continue
 
