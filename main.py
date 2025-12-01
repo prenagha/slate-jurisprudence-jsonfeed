@@ -51,20 +51,19 @@ def get_json_feed(debug):
     page = BeautifulSoup(html.text, 'html.parser')
     log("Parse End")
 
-    oldest = datetime.now(ZoneInfo('America/New_York')) - timedelta(days=7)
-    feed_items = []
     tz = ZoneInfo('America/New_York')
+    oldest = datetime.now(tz) - timedelta(days=7)
+    feed_items = []
     for article in page.find_all('a', {'class': 'topic-story'}):
         article_date_string = article.find('span', {'class': 'topic-story__date'}).text
         try:
             article_date = datetime.strptime(article_date_string, "%b %d, %Y").astimezone(tz)
         except ValueError:
-            log("Default parse failed")
             article_date = dateparser.parse(article_date_string,
                                             settings={'REQUIRE_PARTS': ['day', 'month', 'year'],
                                                       'DEFAULT_LANGUAGES': ['en'],
                                                       'TIMEZONE': str(tz)}).astimezone(tz)
-            log("Extended date parse " + str(article_date))
+            log("Extended date parse " + str(article_date) + " of " + article_date_string)
         if article_date < oldest:
             continue
 
