@@ -58,13 +58,12 @@ def get_json_feed(debug):
         article_date_string = article.find('span', {'class': 'topic-story__date'}).text
         try:
             article_date = datetime.strptime(article_date_string, "%b %d, %Y").astimezone(tz)
-        except:
+        except ValueError:
             log("Default parse failed")
-            article_date = dateparser.parse(article_date_string, \
-                                            settings={'REQUIRE_PARTS': ['day', 'month', 'year'], \
-                                                      'DEFAULT_LANGUAGES': ['en'], \
-                                                      'TIMEZONE': str(tz)})\
-                .astimezone(tz)
+            article_date = dateparser.parse(article_date_string,
+                                            settings={'REQUIRE_PARTS': ['day', 'month', 'year'],
+                                                      'DEFAULT_LANGUAGES': ['en'],
+                                                      'TIMEZONE': str(tz)}).astimezone(tz)
             log("Extended date parse " + str(article_date))
         if article_date < oldest:
             continue
